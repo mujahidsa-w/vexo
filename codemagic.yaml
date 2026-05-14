@@ -2,36 +2,24 @@ workflows:
   ios-workflow-id:
     name: iOS Sample Workflow
     max_build_duration: 30
-    instance_type: mac_mini_m2 # التأكد من استخدام جهاز الماك ليتعرف على بيئة iOS
+    instance_type: mac_mini_m2
 
     scripts:
-      - name: Set up iOS Environment
-        script: | 
-          # هذا الأمر يتأكد من اختيار نسخة Xcode الصحيحة للبناء
-          sudo xcode-select -s /Applications/Xcode.app
-          
       - name: Build Vexo App
-        script: |
-          # بناء التطبيق بصيغة Release لنظام ios
-          # إذا كنت تستخدم Flutter، استبدل السطر التالي بـ: flutter build ipa --release --no-codesign
-          xcodebuild -project "Vexo.xcodeproj" \
-                     -scheme "Vexo" \
-                     -sdk iphoneos \
-                     -configuration Release \
-                     archive -archivePath $PWD/build/Vexo.xcarchive
+        script: | 
+          # أمر بناء التطبيق
+          xcodebuild -project "Vexo.xcodeproj" -scheme "Vexo" -sdk iphoneos -configuration Release build
           
-          # تصدير ملف الـ IPA
-          xcodebuild -exportArchive \
-                     -archivePath $PWD/build/Vexo.xcarchive \
-                     -exportOptionsPlist exportOptions.plist \
-                     -exportPath $PWD/build/ios/ipa
-
     artifacts:
-      - build/ios/ipa/*.ipa # هذا هو الملف الذي ستحمله لتستخدمه مع 3utools
+      # هذا القسم هو المسؤول عن إظهار الملف لك في المتصفح بعد انتهاء البناء
+      - build/ios/ipa/*.ipa
+      - "**/*.ipa"
 
     publishing:
-      - name: Upload Build Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: Vexo-Final-App
-          path: "**/*.ipa"
+      # التعديل هنا: حذفنا الشرطة (-) ليكون "dict" صحيح
+      email:
+        recipients:
+          - mojahedmohdsaad@gmail.com # سيتم إرسال رابط التحميل لإيميلك أيضاً
+        notify:
+          success: true
+          failure: true
