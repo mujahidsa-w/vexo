@@ -1,17 +1,26 @@
-workflows:
-
-    android-workflow-id:
-
-        name: Android Sample Workflow
-
-        # .......    
-
-        # .......
-
-        # .......  
-
-    ios-workflow-id:
-
+ios-workflow-id:
         name: iOS Sample Workflow
-
-        # ......
+        max_build_duration: 30
+        instance_type: mac_mini_m2 # استخدام الماك المذكور في سجلاتك
+        
+        scripts:
+            - name: Build iOS App
+              script: |
+                # هذه الخطوة هي الأهم، بدونها لن تجد أي ملف
+                # إذا كنت تستخدم Flutter، استبدل السطر التالي بـ: flutter build ipa --release --no-codesign
+                xcodebuild -project "Vexo.xcodeproj" -scheme "Vexo" -configuration Release -sdk iphoneos build
+                
+        artifacts:
+            # هنا نقوم بجمع الملفات الناتجة
+            - build/ios/ipa/*.ipa
+            - build/ios/xcarchive/*.xcarchive
+            - "*.ipa"
+            
+        publishing:
+            # الكود الذي يضمن ظهور الملف للتحميل
+            - name: Upload Build Artifacts
+              uses: actions/upload-artifact@v4
+              with:
+                name: Vexo-App-Final
+                path: "**/*.ipa"
+                if-no-files-found: error # سيخبرك النظام فوراً إذا فشل في إيجاد الملف
