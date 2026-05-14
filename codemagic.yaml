@@ -7,19 +7,33 @@ workflows:
     scripts:
       - name: Build Vexo App
         script: | 
-          # أمر بناء التطبيق
-          xcodebuild -project "Vexo.xcodeproj" -scheme "Vexo" -sdk iphoneos -configuration Release build
+          # البحث عن مكان وجود ملف .xcodeproj والدخول للمجلد
+          PROJECT_PATH=$(find . -name "*.xcodeproj" | head -n 1)
+          PROJECT_DIR=$(dirname "$PROJECT_PATH")
+          
+          echo "Found project at: $PROJECT_PATH"
+          cd "$PROJECT_DIR"
+          
+          # الحصول على اسم المشروع الفعلي (بدون .xcodeproj)
+          PROJECT_NAME=$(basename "$PROJECT_PATH" .xcodeproj)
+          
+          # تنفيذ البناء باستخدام الاسم والمسار الصحيحين
+          xcodebuild -project "$PROJECT_NAME.xcodeproj" \
+                     -scheme "$PROJECT_NAME" \
+                     -sdk iphoneos \
+                     -configuration Release \
+                     build \
+                     -derivedDataPath ./build
           
     artifacts:
-      # هذا القسم هو المسؤول عن إظهار الملف لك في المتصفح بعد انتهاء البناء
-      - build/ios/ipa/*.ipa
+      # البحث عن أي ملف .app أو .ipa ناتج في أي مكان
+      - "**/build/Build/Products/Release-iphoneos/*.app"
+      - "**/build/ios/ipa/*.ipa"
       - "**/*.ipa"
 
     publishing:
-      # التعديل هنا: حذفنا الشرطة (-) ليكون "dict" صحيح
       email:
         recipients:
-          - mojahedmohdsaad@gmail.com # سيتم إرسال رابط التحميل لإيميلك أيضاً
+          - mojahedmohdsaad@gmail.com
         notify:
           success: true
-          failure: true
